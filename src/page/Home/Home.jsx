@@ -13,7 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 Modal.setAppElement("#root");
 
 const Home = () => {
-  const [openAddEditNote, setOpenAddEditNote] = useState({
+  const [openAddEditNoteModal, setOpenAddEditNoteModal] = useState({
     isShown: false,
     type: "add",
     data: null,
@@ -22,9 +22,10 @@ const Home = () => {
   const [userInfo, setUserInfo] = useState("");
   const [note, setNote] = useState([]);
   const navigate = useNavigate();
+  const [isSearch, setIsSearch] = useState(false);
 
   const handleEdit = (noteDetails) => {
-    setOpenAddEditNote({ isShown: true, data: noteDetails, type: "edit" });
+    setOpenAddEditNoteModal({ isShown: true, data: noteDetails, type: "edit" });
   };
 
   const getUserInfo = async () => {
@@ -83,6 +84,46 @@ const Home = () => {
     }
   };
 
+  const onSearchNote = async (query) => {
+    try {
+      const response = await axiosInstance.get("/api/notes/searchnotes", {
+        params: { query },
+      });
+      if (response.data?.note) {
+        setIsSearch(true);
+        getAllNotes(response.data.note);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateNotePind = async (noteData) => {
+    try {
+      const noteId = noteData?._id;
+
+      if (!noteId) {
+        toast.error("Error: Note ID is missing!");
+        return;
+      }
+
+      const response = await axiosInstance.put(
+        `/api/notes/updatenotespind/${noteId}`,
+        { isPinned: !noteData.isPinned } // Toggle pin status
+      );
+
+      if (response.data && response.data.data) {
+        toast.success("Note pinned successfully!");
+        getAllNotes();
+      } else {
+        toast.error("Failed to update note!");
+      }
+    } catch (error) {
+      console.error("Update Note Error:", error);
+      toast.error("Failed to update note!");
+    }
+  };
+
   useEffect(() => {
     getUserInfo();
     getAllNotes();
@@ -91,8 +132,8 @@ const Home = () => {
 
   return (
     <>
-      <Navbar userInfo={userInfo} />
-      <div className="container mx-auto px-18 py-3">
+      <Navbar userInfo={userInfo} onSearchNote={onSearchNote} />
+      <div className="container mx-auto px-6 py-2">
         <div className="grid lg:grid-cols-3 gap-4 mt-8 sm:grid-cols-1 md:grid-cols-1">
           {note.length > 0 ? (
             note.map((item) => (
@@ -105,7 +146,7 @@ const Home = () => {
                 isPinned={item.isPinned}
                 onEdit={() => handleEdit(item)}
                 onDelete={() => handleDeleteNote(item)}
-                onPinNote={() => {}}
+                onPinNote={() => updateNotePind(item)}
               />
             ))
           ) : (
@@ -114,18 +155,18 @@ const Home = () => {
         </div>
       </div>
       <button
-        className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 focus:outline-none transition transform hover:scale-110 absolute right-10 bottom-10 z-50"
+        className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 focus:outline-none transition transform hover:scale-110 fixed right-10 bottom-10 z-50"
         onClick={() =>
-          setOpenAddEditNote({ isShown: true, type: "add", data: null })
+          setOpenAddEditNoteModal({ isShown: true, type: "add", data: null })
         }
       >
         <MdAdd className="text-[32px] text-white" />
       </button>
 
       <Modal
-        isOpen={openAddEditNote.isShown}
+        isOpen={openAddEditNoteModal.isShown}
         onRequestClose={() =>
-          setOpenAddEditNote({ isShown: false, type: "add", data: null })
+          setOpenAddEditNoteModal({ isShown: false, type: "add", data: null })
         }
         style={{
           overlay: { backgroundColor: "rgba(0,0,0,0.2)" },
@@ -143,10 +184,10 @@ const Home = () => {
         }}
       >
         <AddEditNote
-          type={openAddEditNote.type}
-          noteData={openAddEditNote.data || {}}
+          type={openAddEditNoteModal.type}
+          noteData={openAddEditNoteModal.data || {}}
           onClose={() =>
-            setOpenAddEditNote({ isShown: false, type: "add", data: null })
+            setOpenAddEditNoteModal({ isShown: false, type: "add", data: null })
           }
           getAllNotes={getAllNotes}
         />

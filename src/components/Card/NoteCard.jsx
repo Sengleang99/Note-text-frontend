@@ -22,7 +22,7 @@ const NodeCard = ({
           </span>
         </div>
         <MdOutlinePushPin
-          className={`icon-btn ${isPinned ? "text-primary" : "text-slate-500"}`}
+          className={`icon-btn ${isPinned ? "text-green-700" : "text-slate-500"}`}
           onClick={onPinNote}
         />
       </div>
@@ -34,7 +34,7 @@ const NodeCard = ({
             : "No tags"}
         </div>
         <div className="flex items-center gap-2">
-          <MdCreate className="icon-btn text-green-600" onClick={onEdit} />
+          <MdCreate className="icon-btn text-blue-600" onClick={onEdit} />
           <MdDelete className="icon-btn text-red-600" onClick={onDelete} />
         </div>
       </div>

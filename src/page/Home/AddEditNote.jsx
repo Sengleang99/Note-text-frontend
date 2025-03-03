@@ -41,7 +41,7 @@ const AddEditNote = ({ type, getAllNotes, onClose, noteData={} }) => {
   // edit data 
   const handleEditNote = async () => {
     try {
-      const noteId = noteData?._id; // Use optional chaining to avoid errors
+      const noteId = noteData?._id; 
   
       if (!noteId) {
         toast.error("Error: Note ID is missing!");
